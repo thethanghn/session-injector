@@ -80,7 +80,7 @@ module Rack
         # a session initiated on https may be established on http
         handshake = {
           :request_ip => request.ip,
-          :request_path => request.fullpath, # more for accounting/stats than anything else
+          # :request_path => request.fullpath, # more for accounting/stats than anything else
           :src_domain => request.host,
           :tgt_domain => target_domain,
           :token_create_time => Time.now.to_i,
