@@ -72,6 +72,14 @@ module Rack
           request = Rack::Request.new(env)
           puts "requestintg from session_injector"
           puts request.params
+          puts request.url
+          begin
+            puts "parsing"
+            uri = URI::parse(request.url)
+            puts uri.inspect
+          rescue => e
+            puts e.message
+          end
           puts env["rack.request.query_string"]
           puts "end."
         end
