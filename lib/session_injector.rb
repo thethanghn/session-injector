@@ -72,7 +72,7 @@ module Rack
           request = Rack::Request.new(env)
           puts "requestintg from session_injector"
           puts request.params
-          puts env.inspect
+          puts env["rack.request.query_string"]
           puts "end."
         end
         [ status, headers, response]
