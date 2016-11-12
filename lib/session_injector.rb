@@ -42,7 +42,7 @@ module Rack
         # architecture, that most likely means the same process/middelware
         # so the key value is not important
         # in fact, non-durability of the token is a security feature
-        generated_token_key = SecureRandom.random_bytes(16).unpack("H*")[0]
+        generated_token_key = SecureRandom.random_bytes(8).unpack("H*")[0]
         @token_key = options[:token_key] || generated_token_key
         @enforced_lifetime = options[:token_lifetime]
         @die_on_handshake_failure = options[:die_on_handshake_failure]
@@ -89,7 +89,7 @@ module Rack
         }
         handshake[:requested_lifetime] = lifetime if lifetime
         # we could reuse ActionDispatch::Cookies.TOKEN_KEY if it is present but let's not!
-        ActiveSupport::MessageEncryptor.new(session_injector.token_key).encrypt_and_sign(handshake);
+        ActiveSupport::MessageEncryptor.new(session_injector.token_key, cipher: 'aes-128-cbc').encrypt_and_sign(handshake);
       end
 
       # generates the handshake parameter key=value string
@@ -189,7 +189,7 @@ module Rack
       # decrypts a handshake token sent to us from a source domain
       def decrypt_handshake_token(token, env)
         begin
-          handshake = ActiveSupport::MessageEncryptor.new(@token_key).decrypt_and_verify(token);
+          handshake = ActiveSupport::MessageEncryptor.new(@token_key, cipher: 'aes-128-cbc').decrypt_and_verify(token);
           validate_handshake(handshake, env)
           return handshake
         rescue InvalidHandshake, ActiveSupport::MessageVerifier::InvalidSignature
