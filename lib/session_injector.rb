@@ -52,9 +52,6 @@ module Rack
       def call(env)
         env[SESSION_INJECTOR_KEY] = self; # store ourselves for downstream access
         request = reconstitute_session(env)
-        if request
-          redirect_to request.path, params: request.params.delete(HANDSHAKE_PARAM)
-        end
         response = @app.call(env)
         response = propagate_session(env, *response)
         response
@@ -71,6 +68,12 @@ module Rack
           # append handshake param to query
           uri.query = [uri.query, prefix, SessionInjector.generate_handshake_parameter(Rack::Request.new(env), headers, propagate_flag[0], propagate_flag[1])].join
           headers["Location"] = uri.to_s
+        else
+          request = Rack::Request.new(env)
+          puts "requestintg from session_injector"
+          puts request.query_parameters
+          puts request.params
+          puts "end."
         end
         [ status, headers, response]
       end
