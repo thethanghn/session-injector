@@ -51,7 +51,7 @@ module Rack
 
       def call(env)
         env[SESSION_INJECTOR_KEY] = self; # store ourselves for downstream access
-        reconstitute_session(env)
+        request = reconstitute_session(env)
         response = @app.call(env)
         response = propagate_session(env, *response)
         response
@@ -68,6 +68,20 @@ module Rack
           # append handshake param to query
           uri.query = [uri.query, prefix, SessionInjector.generate_handshake_parameter(Rack::Request.new(env), headers, propagate_flag[0], propagate_flag[1])].join
           headers["Location"] = uri.to_s
+        else
+          request = Rack::Request.new(env)
+          puts "requestintg from session_injector"
+          puts request.params
+          puts request.url
+          begin
+            puts "parsing"
+            uri = URI::parse(request.url)
+            puts uri.inspect
+          rescue => e
+            puts e.message
+          end
+          puts env["rack.request.query_string"]
+          puts "end."
         end
         [ status, headers, response]
       end
@@ -184,6 +198,7 @@ module Rack
         # if the cookie string has already been read by Rack, update Rack's internal cookie hash variable
         request = Rack::Request.new(env)
         request.cookies[@session_id_key] = cookie_value # call cookies() to make Rack::Request do its stuff
+        request
       end
 
       # decrypts a handshake token sent to us from a source domain
